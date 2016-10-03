@@ -1,0 +1,25 @@
+﻿{
+
+  "manifest_version": 2,
+  "name": "Borderify",
+  "version": "1.0",
+ 
+  "description": "Adds a solid red border to all webpages matching mozilla.org.",
+
+  "permissions": [
+    "activeTab",
+    "contextMenus"
+  ],
+
+  "icons": {
+    "48": "icons/border-48.png"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["*://twitter.com/*"],
+      "js": ["jquery-3.1.1.min.js", "page-eater.js"]
+    }
+  ]
+
+}
