@@ -37,7 +37,7 @@ $(function(){
 });
 
 function createLinkContainer (text) {
-    return '<div class="org_image_url" style="position:absolute; top : 0; left : 0; background-color : hsl(0, 0%, 100%); opacity : 0.9; z-index : 10; min-width : 100%; text-align : center;">原寸画像：' + text + '</div>'
+    return '<div class="org_image_url" style="position:absolute; top : 0; left : 0; background-color : hsl(0, 0%, 100%); opacity : 0.9; z-index : 10; min-width : 100%; padding : 0.2em; text-align : center;">原寸画像：' + text + '</div>'
 }
 
 //現行の投稿枚数は4枚まで（H28-10-06現在）
