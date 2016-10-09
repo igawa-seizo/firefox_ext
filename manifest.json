@@ -6,15 +6,22 @@
  
   "description": "In Twitter, Adds original image links when a mouse pointer is over image containers.",
 
+  "applications": {
+    "gecko": {
+      "id": "addon@example.com",
+      "strict_min_version": "48.0"
+    }
+  },
+
   "permissions": [
-    "activeTab",
-    "contextMenus"
+    "tabs",
+    "downloads"
   ],
 
   "content_scripts": [
     {
-      "matches": ["*://twitter.com/*"],
-      "js": ["jquery-3.1.1.min.js", "twitter_org_img_linker.js"]
+      "matches": ["*://twitter.com/*", "*://*.twimg.com/*"],
+      "js": ["jquery-3.1.1.min.js", "jquery.base64.min.js", "twitter_org_img_linker.js"]
     }
   ]
 
