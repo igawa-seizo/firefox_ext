@@ -11,26 +11,26 @@ $(function(){
         // div.AdaptiveMedia-singlePhoto
 
         var $linker = $rootDom.find("div.org_image_url");
-        
-        if($linker.length === 0) {
-             //原寸画像のリンクDIVがなかったら解析して生成
-             var num = $rootDom.find("div.AdaptiveMedia-photoContainer").length;
-             var $linkCtr = createLinkContainer();
-             
-             var cnt = 0;
-             $rootDom.find("div.AdaptiveMedia-photoContainer").each(function () {
-                  var src = $(this).attr("data-image-url");
-                  $linkCtr.append(createLinkText(src, cnt));
-                  cnt++;
-             });
-           
-            $linkCtr.append(createSwapText());
-
-           $rootDom.prepend($linkCtr);
-        } else {
-            //原寸画像のリンクDIVがあったら再表示
+       
+        if($linker.length > 0) {
+             //原寸画像のリンクDIVがあったら再表示
             $linker.show();
+            return;
         }
+    
+         //原寸画像のリンクDIVがなかったら解析して生成
+         var num = $rootDom.find("div.AdaptiveMedia-photoContainer").length;
+         var $linkCtr = createLinkContainer();
+         
+         var cnt = 0;
+         $rootDom.find("div.AdaptiveMedia-photoContainer").each(function () {
+              var src = $(this).attr("data-image-url");
+              $linkCtr.append(createLinkText(src, cnt));
+              cnt++;
+         });
+     
+        $linkCtr.append(createSwapText());
+        $rootDom.prepend($linkCtr);
     });
 
     //原寸画像を表示する
@@ -38,7 +38,7 @@ $(function(){
         //既に表示されたる画像ビューワは消去
         $("div.org_image_viewer").remove();
         
-        var idx      = parseInt($(this).attr("data-index"));
+        var idx = parseInt($(this).attr("data-index"));
         
         var orgLinks = [];
         var $linkCtr = $(this).parents("div.org_image_url");
@@ -56,25 +56,21 @@ $(function(){
         $(this).parents("div.org_image_viewer").remove();
     });
 
-    //次へ
-    $(document.body).on("click", "span.next_image", function() {
+    //次へ、前への指示
+    $(document.body).on("click", "span.next_image, span.prev_image", function() {
            var $imageViewer = $(this).parents("div.org_image_viewer");
-           var nextIdx = parseInt($imageViewer.attr("data-current-idx")) + 1;
-           var maxIdx = parseInt($imageViewer.attr("data-org-link-max-num"));           
+           var maxIdx = parseInt($imageViewer.attr("data-org-link-max-num"));
+           if(maxIdx === 0) return;
            
-           if(nextIdx > maxIdx) nextIdx = 0;
-           $imageViewer.attr("data-current-idx", nextIdx);
-           $imageViewer.find("img").attr("src", $imageViewer.attr("data-org-link-" + nextIdx));
-    }); 
+           var newIdx = parseInt($imageViewer.attr("data-current-idx"));
+           if( $(this).hasClass("prev_image") === true ) {
+               if(--newIdx < 0) newIdx = maxIdx;
+           } else {
+               if(++newIdx > maxIdx) newIdx = 0;
+           }
 
-    //前へ
-    $(document.body).on("click", "span.prev_image", function() {
-           var $imageViewer = $(this).parents("div.org_image_viewer");
-           var prevIdx = parseInt($imageViewer.attr("data-current-idx")) - 1;        
-           
-           if(prevIdx < 0) prevIdx = parseInt($imageViewer.attr("data-org-link-max-num"));
-           $imageViewer.attr("data-current-idx", prevIdx);
-           $imageViewer.find("img").attr("src", $imageViewer.attr("data-org-link-" + prevIdx));
+           $imageViewer.attr("data-current-idx", newIdx);
+           $imageViewer.find("img").attr("src", $imageViewer.attr("data-org-link-" + newIdx));
     }); 
 
     //表示画像を全て原寸に差し替える
@@ -148,12 +144,17 @@ function createSwapText () {
 
 function createOriginalImageViewer (origLinks, idx) {
     var $div = $("<div></div>");
+    
+    var top = $(window).scrollTop() + 0.1 * $(window).height();
+    
     $div.addClass("org_image_viewer").css({
-        "position" : "fixed",
-        "top" : "10%",
+        "position" : "absolute",
+        "top" : top,
         "left" : "25%",
-        "background-color" : "hsl(0, 0%, 90%)",
+        "background-color" : "hsl(200, 70%, 70%)",
         "z-index" : 1024,
+        "height"  : "auto",
+        "width" : "50%",
         "max-width" : "50%",
         "padding" : "0.5em",
         "border-radius" : "3px",
@@ -165,27 +166,34 @@ function createOriginalImageViewer (origLinks, idx) {
     });
     $div.attr("data-org-link-max-num", origLinks.length - 1).attr("data-current-idx", idx);
 
+    var $imgCtr = $("<div></div>").css({
+        "width" : "100%",
+        "height"  : "100%",
+    });
     var $img = $("<img>");
     $img.addClass("org_image").attr("src", origLinks[idx]).css({
+        "position" : "relative",
         "width" : "100%",
-        "height" : "100%"
+        "height" : "auto",
+        "max-width" : "100%"
     });
 
     var $p = $("<p></p>").css({
         "padding" : "0.5em",
         "text-align" : "center"
     });
+    $imgCtr.append($p).append($img);
+    
+    var leftIcon = '<svg style="vertical-align:middle;" fill="#000000" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/><path d="M0 0h24v24H0z" fill="none"/></svg>';
+    var $left  = $("<span></span>").css({"cursor" : "pointer", "margin-right" : "2em"}).addClass("prev_image").append(leftIcon);
 
     var closeIcon = '<svg style="vertical-align:middle;" fill="#000000" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/><path d="M0 0h24v24H0z" fill="none"/></svg>';
     var $close = $("<span></span>").css({"cursor" : "pointer"}).addClass("del_image_viewer").append(closeIcon);
 
     var rightIcon = '<svg style="vertical-align:middle;" fill="#000000" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/><path d="M0 0h24v24H0z" fill="none"/></svg>';
     var $right = $("<span></span>").css({"cursor" : "pointer", "margin-left" : "2em"}).addClass("next_image").append(rightIcon);
-    
-    var leftIcon = '<svg style="vertical-align:middle;" fill="#000000" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/><path d="M0 0h24v24H0z" fill="none"/></svg>';
-    var $left  = $("<span></span>").css({"cursor" : "pointer", "margin-right" : "2em"}).addClass("prev_image").append(leftIcon);
 
     $p.append($left).append($close).append($right);
 
-    return  $div.append($p).append($img);
+    return  $div.append($imgCtr);
 }
